@@ -1,6 +1,6 @@
 use ini::Ini;
 use std::path::Path;
-
+use which::{which, which_global};
 use super::{Context, Module, ModuleConfig};
 use crate::configs::python::PythonConfig;
 use crate::formatter::StringFormatter;
@@ -31,6 +31,8 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
     } else {
         ""
     };
+
+    // get_python_binary_path(context, &config);
 
     let parsed = StringFormatter::new(config.format).and_then(|formatter| {
         formatter
@@ -121,6 +123,14 @@ fn get_python_virtual_env(context: &Context) -> Option<String> {
                 .map(|filename| String::from(filename.to_str().unwrap_or("")))
         })
     })
+}
+
+fn get_python_binary_path(context: &Context, config: &PythonConfig) -> Option<String> {
+    config.python_binary.0.iter().for_each(|&bin| {
+        println!("Which: {:?}", which(bin).unwrap());
+        println!("Which_global: {:?}", which_global(bin).unwrap());
+    });
+    None
 }
 
 fn get_prompt_from_venv(venv_path: &Path) -> Option<String> {
