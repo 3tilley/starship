@@ -62,6 +62,7 @@ pub fn module<'a>(context: &'a Context) -> Option<Module<'a>> {
                     virtual_env.as_ref().map(|e| Ok(e.trim().to_string()))
                 }
                 "pyenv_prefix" => Some(Ok(pyenv_prefix.to_string())),
+                "binary_location" => Some(Ok(get_python_binary_path(context, &config).unwrap())),
                 _ => None,
             })
             .parse(None, Some(context))
@@ -126,11 +127,11 @@ fn get_python_virtual_env(context: &Context) -> Option<String> {
 }
 
 fn get_python_binary_path(context: &Context, config: &PythonConfig) -> Option<String> {
-    config.python_binary.0.iter().for_each(|&bin| {
-        println!("Which: {:?}", which(bin).unwrap());
-        println!("Which_global: {:?}", which_global(bin).unwrap());
-    });
-    None
+    config.python_binary.0.iter().find_map(|&bin| {
+        which::which_global(bin).ok().map(|p| p.to_str().unwrap().to_string())
+        // println!("Which: {:?}", which(bin).unwrap());
+        // println!("Which_global: {:?}", which_global(bin).unwrap());
+    })
 }
 
 fn get_prompt_from_venv(venv_path: &Path) -> Option<String> {
